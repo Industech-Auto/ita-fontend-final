@@ -1,0 +1,120 @@
+@import "tailwindcss";
+.logo-box {
+  height: 260px;
+  overflow: hidden;
+  width: 90%;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 0 1rem;
+  box-sizing: border-box;
+  border-radius: 12px;
+  
+  position: relative;
+}
+
+.logo-slider {
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 15s linear infinite;
+}
+
+.logo-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 40px;
+  height: 130px;
+  padding: 10px 0;
+  flex-shrink: 0;
+}
+
+.logo-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 8px;
+  transition: transform 0.3s ease, filter 0.3s ease;
+  touch-action: manipulation;
+}
+.logo-img:hover,
+.logo-img:active {
+  transform: scale(1.1);
+  filter: brightness(1.1);
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 2px #033f4b,
+    0 0 10px 2px #6bd5e7;
+}
+
+.logo-img {
+  display: block;
+  border-radius: 8px;
+  background-color: white; /* or transparent */
+  transition: filter 0.3s ease;
+}
+
+.logo-img:hover,
+.logo-img:active {
+  filter: brightness(1.1);
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-260px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .logo-row {
+    gap: 30px;
+  }
+  .logo-img {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo-box {
+    height: 240px;
+  }
+  .logo-row {
+    gap: 25px;
+    height: 120px;
+  }
+  .logo-img {
+    width: 60px;
+    height: 60px;
+  }
+
+  @keyframes slideUp {
+    100% {
+      transform: translateY(-240px);
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-box {
+    height: 200px;
+    padding: 0 0.5rem;
+  }
+  .logo-row {
+    gap: 20px;
+    height: 100px;
+    justify-content: space-around;
+  }
+  .logo-img {
+    width: 48px;
+    height: 48px;
+  }
+
+  @keyframes slideUp {
+    100% {
+      transform: translateY(-200px);
+    }
+  }
+}
