@@ -22,6 +22,16 @@ import {
 } from "lucide-react"
 import Clients from "./admin_components/Clients"
 
+const LOCAL_STORAGE_KEY = "invoice_draft"
+const LOCAL_STORAGE_KEY2 = "invoice_draft"
+
+
+const clearDraftFromLocalStorage = () => {
+  localStorage.removeItem(LOCAL_STORAGE_KEY)
+  localStorage.removeItem(LOCAL_STORAGE_KEY2)
+}
+
+
 const Sidebar = ({
   activeComponent,
   setActiveComponent,
@@ -127,6 +137,8 @@ const Navbar = ({ setIsOpen }) => {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     window.location.href = "/login" // or navigate("/login");
+    clearDraftFromLocalStorage()
+    
   }
 
   return (

@@ -2,6 +2,22 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from "react"
 import axios from "axios";
 import "./Form.css";
 
+const LOCAL_STORAGE_KEY = "qt_draft"
+
+const saveDraftToLocalStorage = (data) => {
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data))
+}
+
+const loadDraftFromLocalStorage = () => {
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY)
+  return data ? JSON.parse(data) : null
+}
+
+const clearDraftFromLocalStorage = () => {
+  localStorage.removeItem(LOCAL_STORAGE_KEY)
+}
+
+
 const materialsFromBackend = [
   "Cement", "Bricks", "Sand", "Steel", "Paint", "Tiles", "Wood", "Glass", "Aluminum", "Copper",
   "Pipes", "Cables", "Fixtures", "Adhesives", "Insulation", "Drywall", "Plaster", "Concrete",
@@ -99,6 +115,23 @@ const Form = () => {
       }
     });
   }, [formData.materials]); // Dependency on the entire materials array to react to changes in any material's state
+
+  useEffect(() => {
+    const draft = loadDraftFromLocalStorage()
+    if (draft) {
+      setFormData((prev) => ({
+        ...prev,
+        ...draft,
+      }))
+    }
+  }, [])  // also runs only on mount
+
+
+
+  useEffect(() => {
+    saveDraftToLocalStorage(formData)
+  }, [formData])
+
 
 
   const removeMaterial = (index) => {
@@ -219,6 +252,7 @@ const Form = () => {
       const res = await axios.post("https://jobqueue.onrender.com/genquotation", payload);
       setSubmissionResponse(res.data);
       showMessageBox("Quotation generated successfully!");
+      clearDraftFromLocalStorage()
     } catch (err) {
       console.error("Failed to generate quotation:", err);
       showMessageBox("Failed to generate quotation. Please try again.");
@@ -406,25 +440,25 @@ const Form = () => {
                 )}
               </div>
 
-              
-                <input
+
+              <input
                 className="px-3 py-2 border border-gray-300 col-span-3 lg:col-span-1 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="HSN"
                 value={mat.hsn}
                 onChange={e => updateMaterial(i, 'hsn', e.target.value)}
               />
-              
 
-              
-                <input
+
+
+              <input
                 className="px-3 py-2 border col-span-3 lg:col-span-1 border-gray-300 text-gray-700  rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 type="number"
                 placeholder="Qty"
                 value={mat.qty}
                 onChange={e => updateMaterial(i, 'qty', e.target.value)}
               />
-              
-              
+
+
               <input
                 className="px-3 py-2 border col-span-3 lg:col-span-1 border-gray-300 text-gray-700  rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 type="number"

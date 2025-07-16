@@ -8,6 +8,23 @@ import {
   insertSellItem,
 } from "./supabaseServices"
 
+
+const LOCAL_STORAGE_KEY = "invoice_draft"
+
+const saveDraftToLocalStorage = (data) => {
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data))
+}
+
+const loadDraftFromLocalStorage = () => {
+  const data = localStorage.getItem(LOCAL_STORAGE_KEY)
+  return data ? JSON.parse(data) : null
+}
+
+const clearDraftFromLocalStorage = () => {
+  localStorage.removeItem(LOCAL_STORAGE_KEY)
+}
+
+
 const XIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -64,11 +81,11 @@ const Combobox = ({ options, value, onChange, placeholder }) => {
     query === ""
       ? options
       : options.filter((option) =>
-          option
-            .toLowerCase()
-            .replace(/\s+/g, "")
-            .includes(query.toLowerCase().replace(/\s+/g, "")),
-        )
+        option
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .includes(query.toLowerCase().replace(/\s+/g, "")),
+      )
 
   const handleInputChange = (e) => {
     const newValue = e.target.value
@@ -186,39 +203,57 @@ function InvoiceManager() {
   // State to display status of operations --> null | "pending" | "success"
   const [generationStatus, setGenerationStatus] = useState(null)
 
+
+
+  // 1️⃣ Fetch components and invoice number from DB
   useEffect(() => {
-    const fetchComponents = async () => {
+    const fetchDataFromDB = async () => {
       try {
+        // Fetch and set components
         const components = await getAllComponents()
         setComponentOptions(components)
-      } catch (error) {
-        console.error("Error fetching components:", error)
-        showMessageBox("Could not load components. Please refresh.")
-      }
-    }
-    fetchComponents()
 
-    const fetchLatestInvoiceNumber = async () => {
-      const latestInvoiceNo = await getLatestInvoiceNumber()
-      if (latestInvoiceNo) {
-        const parts = latestInvoiceNo.split("/")
-        const lastPart = parseInt(parts[parts.length - 1], 10)
-        const newPart = (lastPart + 1).toString().padStart(2, "0")
-        const newInvoiceNo = `ITA/25-26/${newPart}`
+        // Fetch and set the new invoice number
+        const latestInvoiceNo = await getLatestInvoiceNumber()
+        const newInvoiceNo = latestInvoiceNo
+          ? (() => {
+            const parts = latestInvoiceNo.split("/")
+            const last = parseInt(parts.pop(), 10)
+            const next = (last + 1).toString().padStart(2, "0")
+            return `ITA/25-26/${next}`
+          })()
+          : "ITA/25-26/01"
+
+        // Set the base invoice number
         setInvoiceData((prev) => ({
           ...prev,
           invoice: { ...prev.invoice, number: newInvoiceNo },
         }))
-      } else {
-        setInvoiceData((prev) => ({
-          ...prev,
-          invoice: { ...prev.invoice, number: "ITA/25-26/01" },
-        }))
+      } catch (error) {
+        console.error("Error loading data from DB:", error)
       }
     }
 
-    fetchLatestInvoiceNumber()
-  }, [])
+    fetchDataFromDB()
+  }, [])  // runs on initial mount only
+
+  // 2️⃣ Load and apply saved draft from localStorage (after base state is set)
+  useEffect(() => {
+    const draft = loadDraftFromLocalStorage()
+    if (draft) {
+      setInvoiceData((prev) => ({
+        ...prev,
+        ...draft,
+      }))
+    }
+  }, [])  // also runs only on mount
+
+
+
+  useEffect(() => {
+    saveDraftToLocalStorage(invoiceData)
+  }, [invoiceData])
+
 
   // --- Helper Functions & Calculations ---
 
@@ -438,6 +473,8 @@ function InvoiceManager() {
       }
 
       setGenerationStatus("success")
+      clearDraftFromLocalStorage()
+
 
       // Insert into invoices table
       const invoicePayload = {
