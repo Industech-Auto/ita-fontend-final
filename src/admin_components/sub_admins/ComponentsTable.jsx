@@ -1,9 +1,21 @@
+// ComponentsTable.jsx
 import React, { useState, useMemo } from "react";
-import CategoryDetailModal from "./CategoryDetailModel"; // ✅ import the new component
+import CategoryDetailModal from "./CategoryDetailModel";
+
+// ---------- tiny CSV helper ----------
+const downloadCSV = (rows, filename) => {
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    rows.map(r => r.join(",")).join("\n");
+  const link = document.createElement("a");
+  link.setAttribute("href", encodeURI(csvContent));
+  link.setAttribute("download", filename);
+  link.click();
+};
 
 const ComponentsTable = ({ data, onViewModeChange }) => {
   const [byCategory, setByCategory] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState(null); // ✅ track clicked category
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const handleToggle = () => {
     setByCategory(prev => {
@@ -26,19 +38,48 @@ const ComponentsTable = ({ data, onViewModeChange }) => {
     return Object.values(map);
   }, [data, byCategory]);
 
-  // ✅ filter products for the selected category
+  // filter products for the selected category
   const categoryProducts = selectedCategory
     ? data.filter(prod => (prod.category?.name || "Uncategorized") === selectedCategory)
     : [];
 
+  // ---------- CSV generators ----------
+  const downloadCategoryCSV = () => {
+    const header = ["Sl No.", "Category", "Total Qty"];
+    const rows = groupedData.map((d, i) => [i + 1, d.category, d.totalQty]);
+    downloadCSV([header, ...rows], "categories.csv");
+  };
+
+  const downloadProductCSV = () => {
+    const header = ["Sl No.", "Name", "HSN", "Qty", "Brand", "Category"];
+    const rows = data.map((p, i) => [
+      i + 1,
+      p.name,
+      p.hsn,
+      p.qty,
+      p.brand,
+      p.category?.name || "Uncategorized"
+    ]);
+    downloadCSV([header, ...rows], "products.csv");
+  };
+
   return (
     <div className="flex flex-col justify-center items-start gap-5 w-full">
-      <button
-        className="px-4 py-2 rounded bg-blue-600 text-white"
-        onClick={handleToggle}
-      >
-        {byCategory ? "By Product" : "By Category"}
-      </button>
+      <div className="flex gap-3">
+        <button
+          className="px-4 py-2 rounded bg-blue-600 text-white"
+          onClick={handleToggle}
+        >
+          {byCategory ? "By Product" : "By Category"}
+        </button>
+
+        <button
+          onClick={byCategory ? downloadCategoryCSV : downloadProductCSV}
+          className="px-4 py-2 rounded bg-green-600 text-white"
+        >
+          Download CSV
+        </button>
+      </div>
 
       <table className="min-w-full text-left">
         <thead>
