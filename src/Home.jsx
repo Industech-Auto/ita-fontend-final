@@ -14,7 +14,7 @@ const WhyIta = lazy(() => import('./components/WhyIta'));
 const Contact = lazy(() => import('./components/Contact'));
 const Review = lazy(() => import('./components/Review'));
 const Footer = lazy(() => import('./components/Footer'));
-
+import ScrollArrows from './components/ScrollArrows';
 function Home() {
 
   useEffect(() => {
@@ -63,6 +63,7 @@ function Home() {
         <Review />
         <Footer />
       </Suspense>
+      <ScrollArrows />
     </div>
   );
 }
