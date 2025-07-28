@@ -13,10 +13,10 @@ function Brands() {
                 <div className="m-4 flex flex-col w-full bg-blue-100 group-[.dark-mode]:bg-[#313131]/30 justify-center items-center">
                     <h1 data-aos="fade-up" data-aos-delay="100" className="mt-4 text-lg"></h1>
 
-                    <div className="flex justify-around flex-wrap gap-6 p-4 [&>*]:md:w-34 w-full max-w-[500px]">
-                        <img data-aos="fade-right" src={google} alt="Google" className="w-[100px] h-auto object-contain" />
-                        <img data-aos="fade-up" src={apple} alt="Apple" className="w-[100px] h-auto object-contain" />
-                        <img data-aos="fade-left" src={alexa} alt="Alexa" className="w-[100px] h-auto object-contain" />
+                    <div className="flex justify-center flex-wrap gap-20 p-4 [&>*]:md:w-34 w-full max-w-screen">
+                        <img data-aos="fade-right" src={google} alt="Google" className="w-[100px] h-auto scale-130 object-contain" />
+                        <img data-aos="fade-up" src={apple} alt="Apple" className="w-[100px] h-auto scale-130 object-contain" />
+                        <img data-aos="fade-left" src={alexa} alt="Alexa" className="w-[100px] h-auto scale-130 object-contain" />
                     </div>
                 </div>
             </div>
