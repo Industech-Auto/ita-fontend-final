@@ -37,7 +37,7 @@ const Form = () => {
   const [formData, setFormData] = useState({
     customerName: "",
     place: "",
-    email: "",
+    email: "industechautomations@gmail.com",
     date: new Date().toISOString().slice(0, 10),
     materials: [
       { description: "", hsn: "", qty: "", unitPrice: "", amount: 0, isDropdownOpen: false, currentSearchTerm: "", highlightedIndex: -1 }
@@ -249,7 +249,7 @@ const Form = () => {
     };
 
     try {
-      const res = await axios.post("https://jobqueue.onrender.com/genquotation", payload);
+      const res = await axios.post("https://indusbackend-3697.onrender.com/genquotation", payload);
       setSubmissionResponse(res.data);
       showMessageBox("Quotation generated successfully!");
       clearDraftFromLocalStorage()

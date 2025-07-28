@@ -2,7 +2,7 @@
 
 import { supabase } from "./supabaseClient"
 
-const BACKEND_URL = "https://jobqueue.onrender.com"
+const BACKEND_URL = "https://indusbackend-3697.onrender.com"
 
 // 1) Insert an invoice
 export const insertInvoice = async (invoiceData) => {

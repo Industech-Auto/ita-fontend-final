@@ -457,7 +457,7 @@ function InvoiceManager() {
       Installation: parseFloat(invoiceData.installationCharge) || 0,
     }
 
-    const API_URL = "https://jobqueue.onrender.com/geninvoice"
+    const API_URL = "https://indusbackend-3697.onrender.com/geninvoice"
     console.log("Submitting to backend:", JSON.stringify(payload, null, 2))
 
     try {

@@ -62,7 +62,7 @@ function Navbar() {
             <div className='flex items-center  gap-6'>
 
                 <img className='w-[50px]' src={isDarkMode ? logo : logob} alt="logo" />
-                <h1 className='hidden md:flex poppins-extrabold dark-text-s light-text-s text-3xl '>Industech Automations</h1>
+                <h1 className='hidden md:flex poppins-extrabold gd-text text-3xl '>Industech Automations</h1>
             </div>
 
             {/* Right navigation */}
