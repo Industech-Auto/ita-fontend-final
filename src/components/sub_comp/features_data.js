@@ -27,16 +27,19 @@ const featuresData = [
   {
     title: "Smart Home",
     mainImage: smartHomeMain,
+    description: "Seamlessly control your home's lighting, security, and entertainment from a single device. We integrate everything from smart locks to automated gardens, ensuring total convenience and peace of mind.",
     carouselImages: [cctv, lock, tv, garden, gate, fireAl, kitchen],
   },
   {
     title: "Smart Living",
     mainImage: smartLivingMain,
+    description: "Intelligent automation for entire buildings and complexes. We manage HVAC, energy, security, and visitor access to create a secure, modern, and efficient community lifestyle.",
     carouselImages: [lift, hvac, gym, curtain, energy, fireSafety, visitor],
   },
   {
     title: "Smart Office",
     mainImage: smartOfficeMain,
+    description: "Boost office productivity with intelligent automation. Our integrated systems manage access control, conference rooms, and climate systems to create a secure and modern work environment.",
     carouselImages: [admin, cabine, confRoom, secuMonit, lift, gate, hvac],
   },
 ];

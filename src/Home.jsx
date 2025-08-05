@@ -52,6 +52,7 @@ function Home() {
             title={section.title}
             mainImage={section.mainImage}
             carouselImages={section.carouselImages}
+            paragraphText={section.description}
           />
         ))}
         <LogoCaro />
