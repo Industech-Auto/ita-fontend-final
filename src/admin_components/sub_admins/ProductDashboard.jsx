@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getAllComponents, getPurchasesSummary, getSellsSummary } from '../supabaseServices';
+import { getAllComponents, getPurchasesSummary, getSellsSummary, deleteProduct, getVisibleComponents } from '../supabaseServices';
 import InvoiceDetail from './InvoiceDetail';
 import ComponentsTable from './ComponentsTable';
 import SalesInvoiceDetail from './SalesInvoiceDetail';
@@ -26,7 +26,7 @@ const ProductDashboard = ({
     const fetchData = async () => {
       try {
         if (activeTab === 'components') {
-          const data = await getAllComponents();
+          const data = await getVisibleComponents();
           setTableData(data);
         } else if (activeTab === 'purchase') {
           const data = await getPurchasesSummary();
@@ -79,6 +79,18 @@ const ProductDashboard = ({
     return filtered;
   }, [tableData, searchQuery, dateRange, activeTab, viewMode, filtersEnabled]);
 
+  const handleDeleteProduct = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this product?");
+    if (!confirmDelete) return;
+
+    const res = await deleteProduct(id);
+    if (res.success) {
+      setTableData(prev => prev.filter(item => item.id !== id)); // update UI instantly
+    } else {
+      alert("Failed to delete product");
+    }
+  };
+
   return (
     <div className="bg-gray-200 p-4 max-w-screen md:w-full h-auto text-gray-600 mx-auto rounded-lg shadow-md">
       <div className="flex space-x-2 mb-4">
@@ -104,7 +116,7 @@ const ProductDashboard = ({
 
       <div className="border border-gray-300 rounded-md overflow-x-scroll bg-gray-100 p-4 min-h-[200px]">
         {activeTab === 'components' && (
-          <ComponentsTable data={filteredData} onViewModeChange={onViewModeChange} />
+          <ComponentsTable data={filteredData} onViewModeChange={onViewModeChange} onDeleteProduct={handleDeleteProduct}  />
         )}
 
         {activeTab === 'purchase' && (
@@ -177,19 +189,19 @@ const PurchasesTable = ({ data, setSelectedInvoice }) => (
 // ✅ Sells Table (without opening invoice details on click)
 const SellsTable = ({ data, setSelectedInvoice }) => {
   const sortedData = useMemo(() => {
-  return [...data].sort((a, b) => {
-    const aNum = parseInt(a.invoice_no, 10);
-    const bNum = parseInt(b.invoice_no, 10);
+    return [...data].sort((a, b) => {
+      const aNum = parseInt(a.invoice_no, 10);
+      const bNum = parseInt(b.invoice_no, 10);
 
-    if (!isNaN(aNum) && !isNaN(bNum)) {
-      return bNum - aNum; // numeric comparison
-    }
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return bNum - aNum; // numeric comparison
+      }
 
-    const aInv = a.invoice_no || '';
-    const bInv = b.invoice_no || '';
-    return bInv.localeCompare(aInv); // safe even if undefined
-  });
-}, [data]);
+      const aInv = a.invoice_no || '';
+      const bInv = b.invoice_no || '';
+      return bInv.localeCompare(aInv); // safe even if undefined
+    });
+  }, [data]);
 
 
   return (

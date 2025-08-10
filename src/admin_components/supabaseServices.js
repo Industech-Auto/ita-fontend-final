@@ -1,8 +1,8 @@
 // src/supabaseServices.js
 
-import { supabase } from "./supabaseClient"
+import { supabase } from "./supabaseClient";
 
-const BACKEND_URL = "https://indusbackend-3697.onrender.com"
+const BACKEND_URL = "https://indusbackend-3697.onrender.com";
 
 // 1) Insert an invoice
 export const insertInvoice = async (invoiceData) => {
@@ -10,10 +10,10 @@ export const insertInvoice = async (invoiceData) => {
     .from("invoices")
     .insert([invoiceData])
     .select()
-    .single()
-  if (error) throw error
-  return data
-}
+    .single();
+  if (error) throw error;
+  return data;
+};
 
 // 2) Insert a component
 export const insertComponent = async (componentData) => {
@@ -21,10 +21,10 @@ export const insertComponent = async (componentData) => {
     .from("components")
     .insert([componentData])
     .select()
-    .single()
-  if (error) throw error
-  return data
-}
+    .single();
+  if (error) throw error;
+  return data;
+};
 
 // 3) Insert a purchase item
 export const insertPurchaseItem = async (purchaseData) => {
@@ -32,10 +32,10 @@ export const insertPurchaseItem = async (purchaseData) => {
     .from("purchase_items")
     .insert([purchaseData])
     .select()
-    .single()
-  if (error) throw error
-  return data
-}
+    .single();
+  if (error) throw error;
+  return data;
+};
 
 // 4) Insert a sell item
 export const insertSellItem = async (sellItemData) => {
@@ -43,22 +43,22 @@ export const insertSellItem = async (sellItemData) => {
     .from("sell_items")
     .insert([sellItemData])
     .select()
-    .single()
-  if (error) throw error
-  return data
-}
+    .single();
+  if (error) throw error;
+  return data;
+};
 
 export const getComponentDetails = async (componentId = null) => {
-  let query = supabase.from("components").select("*")
+  let query = supabase.from("components").select("*");
 
   if (componentId) {
-    query = query.eq("id", componentId).single()
+    query = query.eq("id", componentId).single();
   }
 
-  const { data, error } = await query
-  if (error) throw error
-  return data
-}
+  const { data, error } = await query;
+  if (error) throw error;
+  return data;
+};
 
 // 5) Update component quantity
 export const updateComponentQty = async (compId, newQty) => {
@@ -67,10 +67,10 @@ export const updateComponentQty = async (compId, newQty) => {
     .update({ qty: newQty })
     .eq("id", compId)
     .select()
-    .single()
-  if (error) throw error
-  return data
-}
+    .single();
+  if (error) throw error;
+  return data;
+};
 
 // Insert a new dealer
 export const insertDealer = async (dealerName) => {
@@ -78,10 +78,10 @@ export const insertDealer = async (dealerName) => {
     .from("dealers")
     .insert([{ name: dealerName }])
     .select()
-    .single()
-  if (error) throw error
-  return data
-}
+    .single();
+  if (error) throw error;
+  return data;
+};
 
 // Get an existing dealer by name
 export const getDealerByName = async (dealerName) => {
@@ -89,10 +89,10 @@ export const getDealerByName = async (dealerName) => {
     .from("dealers")
     .select("*")
     .eq("name", dealerName)
-    .single()
-  if (error && error.code !== "PGRST116") throw error // PGRST116: no rows found
-  return data // Can be null if not found
-}
+    .single();
+  if (error && error.code !== "PGRST116") throw error; // PGRST116: no rows found
+  return data; // Can be null if not found
+};
 
 // src/supabaseServices.js
 
@@ -114,13 +114,56 @@ export const getAllComponents = async () => {
       id,
       name
     )
-  `,
+  `
     )
-    .order("name", { ascending: true })
+    .order("name", { ascending: true });
 
-  if (error) throw error
-  return data
-}
+  if (error) throw error;
+  return data;
+};
+
+export const getVisibleComponents = async () => {
+  const { data, error } = await supabase
+    .from("show_products") // query the view
+    .select(
+      `
+      id,
+      name,
+      hsn,
+      qty,
+      brand,
+      dealer:dealer_id (
+        id,
+        name
+      ),
+      category:category_id (
+        id,
+        name
+      )
+    `
+    )
+    .order("name", { ascending: true });
+
+  if (error) throw error;
+  return data;
+};
+
+
+export const deleteProduct = async (productId) => {
+  try {
+    const { error } = await supabase
+      .from("components")
+      .update({ show: false }) // soft delete
+      .eq("id", productId);
+
+    if (error) throw error;
+
+    return { success: true };
+  } catch (err) {
+    console.error("Error updating product visibility:", err);
+    return { success: false, error: err };
+  }
+};
 
 export const getPurchasesSummary = async () => {
   const { data, error } = await supabase
@@ -131,20 +174,20 @@ export const getPurchasesSummary = async () => {
       date,
       total_amount,
       dealer:dealer_id ( name )
-    `,
+    `
     )
     .eq("invoice_type", "purchase")
-    .order("date", { ascending: false })
+    .order("date", { ascending: false });
 
-  if (error) throw error
+  if (error) throw error;
 
   return data.map((inv) => ({
     invoice_no: inv.invoice_no,
     date: inv.date,
     dealer: inv.dealer?.name || "N/A",
     total_amount: inv.total_amount,
-  }))
-}
+  }));
+};
 
 //display inv details
 export const getSalesInvoiceDetails = async (invoiceNo) => {
@@ -167,15 +210,15 @@ export const getSalesInvoiceDetails = async (invoiceNo) => {
           brand
         )
       )
-    `,
+    `
     )
     .eq("invoice_no", invoiceNo)
     .eq("invoice_type", "sell")
-    .single()
+    .single();
 
-  if (error) throw error
-  return data
-}
+  if (error) throw error;
+  return data;
+};
 
 export const getInvoiceDetails = async (invoiceNo) => {
   const { data, error } = await supabase
@@ -196,14 +239,14 @@ export const getInvoiceDetails = async (invoiceNo) => {
           dealer:dealer_id ( name ) 
         )
       )
-    `,
+    `
     )
     .eq("invoice_no", invoiceNo)
-    .single()
+    .single();
 
-  if (error) throw error
-  return data
-}
+  if (error) throw error;
+  return data;
+};
 
 export const getLatestInvoiceNumber = async () => {
   const { data, error } = await supabase
@@ -212,14 +255,14 @@ export const getLatestInvoiceNumber = async () => {
     .eq("invoice_type", "sell")
     .order("created_at", { ascending: false })
     .limit(1)
-    .single()
+    .single();
 
   if (error && error.code !== "PGRST116") {
-    throw error
+    throw error;
   }
 
-  return data ? data.invoice_no : null
-}
+  return data ? data.invoice_no : null;
+};
 
 export async function getSellsSummary() {
   const { data, error } = await supabase
@@ -230,80 +273,80 @@ export async function getSellsSummary() {
       total_amount,
       date,
       customer
-    `,
+    `
     )
-    .eq("invoice_type", "sell")
+    .eq("invoice_type", "sell");
 
-  if (error) throw error
-  return data
+  if (error) throw error;
+  return data;
 }
 
 // for projects
 export async function getAllProjects() {
   const { data, error } = await supabase
     .from("projects")
-    .select("*, clients(name, phone)") // fetch related client data
+    .select("*, clients(name, phone)"); // fetch related client data
 
   if (error) {
-    console.error("Error fetching projects:", error)
-    throw error
+    console.error("Error fetching projects:", error);
+    throw error;
   }
 
-  return data
+  return data;
 }
 
 export async function getProjectStatuses() {
-  const { data, error } = await supabase.from("projects").select("status") // Only get the status field
+  const { data, error } = await supabase.from("projects").select("status"); // Only get the status field
 
   if (error) {
-    console.error("Error fetching project statuses:", error)
-    throw error
+    console.error("Error fetching project statuses:", error);
+    throw error;
   }
 
-  return data // Array of objects like [{ status: 'In Progress' }, ...]
+  return data; // Array of objects like [{ status: 'In Progress' }, ...]
 }
 
 export async function getProjectProfits(startDate, endDate) {
-  const now = new Date()
-  const start = startDate || `${now.getFullYear()}-01-01`
-  const end = endDate || `${now.getFullYear()}-12-31`
+  const now = new Date();
+  const start = startDate || `${now.getFullYear()}-01-01`;
+  const end = endDate || `${now.getFullYear()}-12-31`;
 
   const { data, error } = await supabase
     .from("projects")
     .select("project_date, profit, status")
     .gte("project_date", start)
-    .lte("project_date", end)
+    .lte("project_date", end);
 
   if (error) {
-    console.error("Error fetching project profits:", error)
-    throw error
+    console.error("Error fetching project profits:", error);
+    throw error;
   }
 
-  return data
+  return data;
 }
 
 export async function getMonthlyProfitSums() {
-  const now = new Date()
+  const now = new Date();
 
   // Calculate start of current month
   const currentMonthStart = new Date(
     now.getFullYear(),
     now.getMonth(),
-    1,
-  ).toISOString()
+    1
+  ).toISOString();
   const nextMonthStart = new Date(
     now.getFullYear(),
     now.getMonth() + 1,
-    1,
-  ).toISOString()
+    1
+  ).toISOString();
 
   // Calculate start of previous month
   const prevMonthStart = new Date(
     now.getFullYear(),
     now.getMonth() - 1,
-    1,
-  ).toISOString()
-  const currentMonthStartForPrev = currentMonthStart // reuse as previous month end
+    1
+  ).toISOString();
+  const currentMonthStartForPrev = currentMonthStart; // reuse as previous month end
 
   // --- Query current month profit sum (Completed only) ---
   let { data: currentData, error: currentError } = await supabase
@@ -311,14 +354,14 @@ export async function getMonthlyProfitSums() {
     .select("profit")
     .eq("status", "Completed") // ✅ Only completed projects
     .gte("project_date", currentMonthStart)
-    .lt("project_date", nextMonthStart)
+    .lt("project_date", nextMonthStart);
 
-  if (currentError) throw currentError
+  if (currentError) throw currentError;
 
   const currentMonthProfit = currentData.reduce(
     (sum, proj) => sum + (proj.profit || 0),
-    0,
-  )
+    0
+  );
 
   // --- Query previous month profit sum (Completed only) ---
   let { data: prevData, error: prevError } = await supabase
@@ -326,43 +369,43 @@ export async function getMonthlyProfitSums() {
     .select("profit")
     .eq("status", "Completed") // ✅ Only completed projects
     .gte("project_date", prevMonthStart)
-    .lt("project_date", currentMonthStartForPrev)
+    .lt("project_date", currentMonthStartForPrev);
 
-  if (prevError) throw prevError
+  if (prevError) throw prevError;
 
   const previousMonthProfit = prevData.reduce(
     (sum, proj) => sum + (proj.profit || 0),
-    0,
-  )
+    0
+  );
 
   return {
     currentMonth: currentMonthProfit,
     previousMonth: previousMonthProfit,
-  }
+  };
 }
 
 export async function getCompletedProjectCounts() {
-  const now = new Date()
+  const now = new Date();
 
   // Start and end for current month
   const currentMonthStart = new Date(
     now.getFullYear(),
     now.getMonth(),
-    1,
-  ).toISOString()
+    1
+  ).toISOString();
   const nextMonthStart = new Date(
     now.getFullYear(),
     now.getMonth() + 1,
-    1,
-  ).toISOString()
+    1
+  ).toISOString();
 
   // Start and end for previous month
   const prevMonthStart = new Date(
     now.getFullYear(),
     now.getMonth() - 1,
-    1,
-  ).toISOString()
-  const currentMonthStartForPrev = currentMonthStart
+    1
+  ).toISOString();
+  const currentMonthStartForPrev = currentMonthStart;
 
   // --- Query current month completed projects count ---
   const { count: currentCount, error: currentError } = await supabase
@@ -370,9 +413,9 @@ export async function getCompletedProjectCounts() {
     .select("*", { count: "exact", head: true })
     .eq("status", "Completed")
     .gte("project_date", currentMonthStart)
-    .lt("project_date", nextMonthStart)
+    .lt("project_date", nextMonthStart);
 
-  if (currentError) throw currentError
+  if (currentError) throw currentError;
 
   // --- Query previous month completed projects count ---
   const { count: prevCount, error: prevError } = await supabase
@@ -380,44 +423,44 @@ export async function getCompletedProjectCounts() {
     .select("*", { count: "exact", head: true })
     .eq("status", "Completed")
     .gte("project_date", prevMonthStart)
-    .lt("project_date", currentMonthStartForPrev)
+    .lt("project_date", currentMonthStartForPrev);
 
-  if (prevError) throw prevError
+  if (prevError) throw prevError;
 
   return {
     currentMonth: currentCount || 0,
     previousMonth: prevCount || 0,
-  }
+  };
 }
 
 export async function getOngoingProjectsCount() {
   const { count, error } = await supabase
     .from("projects")
     .select("*", { count: "exact", head: true })
-    .eq("status", "Ongoing")
+    .eq("status", "Ongoing");
 
-  if (error) throw error
+  if (error) throw error;
 
-  return count || 0
+  return count || 0;
 }
 
 export const loginUser = async (email, password) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
-  })
-  if (error) throw error
-  return data
-}
+  });
+  if (error) throw error;
+  return data;
+};
 
 export const registerUser = async (email, password, name) => {
   const {
     data: { session },
-  } = await supabase.auth.getSession()
-  const accessToken = session?.access_token
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
 
   if (!accessToken) {
-    throw new Error("Authentication required: No active session found.")
+    throw new Error("Authentication required: No active session found.");
   }
 
   const response = await fetch(`${BACKEND_URL}/api/admin/register-user`, {
@@ -427,24 +470,24 @@ export const registerUser = async (email, password, name) => {
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ email, password, name, role: "employee" }),
-  })
+  });
 
-  const data = await response.json()
+  const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || "Failed to register user via backend.")
+    throw new Error(data.error || "Failed to register user via backend.");
   }
-  return data
-}
+  return data;
+};
 
 export const registerAdmin = async (email, password, name) => {
   const {
     data: { session },
-  } = await supabase.auth.getSession()
-  const accessToken = session?.access_token
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
 
   if (!accessToken) {
-    throw new Error("Authentication required: No active session found.")
+    throw new Error("Authentication required: No active session found.");
   }
 
   const response = await fetch(`${BACKEND_URL}/api/admin/register-user`, {
@@ -454,52 +497,52 @@ export const registerAdmin = async (email, password, name) => {
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ email, password, name, role: "admin" }),
-  })
+  });
 
-  const data = await response.json()
+  const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || "Failed to register admin via backend.")
+    throw new Error(data.error || "Failed to register admin via backend.");
   }
-  return data
-}
+  return data;
+};
 
 export const getAllUsers = async () => {
   const {
     data: { session },
-  } = await supabase.auth.getSession()
-  const accessToken = session?.access_token
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
 
   if (!accessToken) {
-    throw new Error("Authentication required: No active session found.")
+    throw new Error("Authentication required: No active session found.");
   }
 
   const response = await fetch(`${BACKEND_URL}/api/admin/users`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
-  })
+  });
 
-  console.log("getAllUsers: Fetch Response:", response) // LOG
+  console.log("getAllUsers: Fetch Response:", response); // LOG
 
-  const data = await response.json()
+  const data = await response.json();
 
-  console.log("getAllUsers: Response Data:", data) // LOG
+  console.log("getAllUsers: Response Data:", data); // LOG
 
   if (!response.ok) {
-    throw new Error(data.error || "Failed to fetch users via backend.")
+    throw new Error(data.error || "Failed to fetch users via backend.");
   }
-  return data
-}
+  return data;
+};
 
 export const deleteUser = async (userId) => {
   const {
     data: { session },
-  } = await supabase.auth.getSession()
-  const accessToken = session?.access_token
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
 
   if (!accessToken) {
-    throw new Error("Authentication required: No active session found.")
+    throw new Error("Authentication required: No active session found.");
   }
 
   const response = await fetch(`${BACKEND_URL}/api/admin/user/${userId}`, {
@@ -508,53 +551,53 @@ export const deleteUser = async (userId) => {
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
-  })
+  });
 
-  const data = await response.json()
+  const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || "Failed to delete user via backend.")
+    throw new Error(data.error || "Failed to delete user via backend.");
   }
-  return data
-}
+  return data;
+};
 
 export async function getUpcomingProjectsCount() {
   const { count, error } = await supabase
     .from("projects")
     .select("id", { count: "exact", head: true })
-    .eq("status", "Upcoming")
+    .eq("status", "Upcoming");
 
   if (error) {
-    console.error("Error fetching upcoming projects count:", error)
-    throw error
+    console.error("Error fetching upcoming projects count:", error);
+    throw error;
   }
 
-  return count
+  return count;
 }
 export const getUser = async () => {
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
   if (user) {
-    return user
+    return user;
   }
-  return null
-}
+  return null;
+};
 
 export async function getFinancialYearProfitSums() {
-  const now = new Date()
-  const year = now.getFullYear()
+  const now = new Date();
+  const year = now.getFullYear();
 
   // Determine start and end of current financial year
-  const isBeforeApril = now.getMonth() < 3 // Jan(0)–Mar(2)
-  const fyStartYear = isBeforeApril ? year - 1 : year
-  const fyEndYear = fyStartYear + 1
+  const isBeforeApril = now.getMonth() < 3; // Jan(0)–Mar(2)
+  const fyStartYear = isBeforeApril ? year - 1 : year;
+  const fyEndYear = fyStartYear + 1;
 
-  const thisFYStart = new Date(fyStartYear, 3, 1).toISOString() // April 1
-  const nextFYStart = new Date(fyEndYear, 3, 1).toISOString() // Next April 1
+  const thisFYStart = new Date(fyStartYear, 3, 1).toISOString(); // April 1
+  const nextFYStart = new Date(fyEndYear, 3, 1).toISOString(); // Next April 1
 
-  const prevFYStart = new Date(fyStartYear - 1, 3, 1).toISOString()
-  const thisFYStartForPrev = thisFYStart
+  const prevFYStart = new Date(fyStartYear - 1, 3, 1).toISOString();
+  const thisFYStartForPrev = thisFYStart;
 
   // This financial year profit
   const { data: thisFYData, error: thisFYError } = await supabase
@@ -562,14 +605,14 @@ export async function getFinancialYearProfitSums() {
     .select("profit")
     .eq("status", "Completed")
     .gte("project_date", thisFYStart)
-    .lt("project_date", nextFYStart)
+    .lt("project_date", nextFYStart);
 
-  if (thisFYError) throw thisFYError
+  if (thisFYError) throw thisFYError;
 
   const thisYearProfit = thisFYData.reduce(
     (sum, proj) => sum + (proj.profit || 0),
-    0,
-  )
+    0
+  );
 
   // Previous financial year profit
   const { data: prevFYData, error: prevFYError } = await supabase
@@ -577,57 +620,57 @@ export async function getFinancialYearProfitSums() {
     .select("profit")
     .eq("status", "Completed")
     .gte("project_date", prevFYStart)
-    .lt("project_date", thisFYStartForPrev)
+    .lt("project_date", thisFYStartForPrev);
 
-  if (prevFYError) throw prevFYError
+  if (prevFYError) throw prevFYError;
 
   const lastYearProfit = prevFYData.reduce(
     (sum, proj) => sum + (proj.profit || 0),
-    0,
-  )
+    0
+  );
 
   return {
     thisFY: thisYearProfit,
     lastFY: lastYearProfit,
-  }
+  };
 }
 //contact_form
 export const getContactSubmissions = async () => {
   const { data, error } = await supabase
     .from("contact_submissions")
     .select("*")
-    .order("created_at", { ascending: false }) // Show newest first
+    .order("created_at", { ascending: false }); // Show newest first
 
-  if (error) throw error
-  return data
-}
+  if (error) throw error;
+  return data;
+};
 
 export async function getFinancialYearMonthlyProfits() {
-  const now = new Date()
-  const year = now.getFullYear()
-  const isBeforeApril = now.getMonth() < 3
-  const fyStartYear = isBeforeApril ? year - 1 : year
-  const fyEndYear = fyStartYear + 1
+  const now = new Date();
+  const year = now.getFullYear();
+  const isBeforeApril = now.getMonth() < 3;
+  const fyStartYear = isBeforeApril ? year - 1 : year;
+  const fyEndYear = fyStartYear + 1;
 
-  const start = new Date(fyStartYear, 3, 1) // April 1st
-  const end = new Date(fyEndYear, 3, 1) // Next March 31
+  const start = new Date(fyStartYear, 3, 1); // April 1st
+  const end = new Date(fyEndYear, 3, 1); // Next March 31
 
   const { data, error } = await supabase
     .from("projects")
     .select("project_date, profit")
     .eq("status", "Completed")
     .gte("project_date", start.toISOString())
-    .lt("project_date", end.toISOString())
+    .lt("project_date", end.toISOString());
 
-  if (error) throw error
+  if (error) throw error;
 
-  const monthlyProfits = {}
+  const monthlyProfits = {};
 
   data.forEach(({ project_date, profit }) => {
-    const date = new Date(project_date)
-    const month = date.toLocaleString("default", { month: "short" }) // e.g., Apr
-    monthlyProfits[month] = (monthlyProfits[month] || 0) + (profit || 0)
-  })
+    const date = new Date(project_date);
+    const month = date.toLocaleString("default", { month: "short" }); // e.g., Apr
+    monthlyProfits[month] = (monthlyProfits[month] || 0) + (profit || 0);
+  });
 
   const monthsOrder = [
     "Apr",
@@ -642,35 +685,35 @@ export async function getFinancialYearMonthlyProfits() {
     "Jan",
     "Feb",
     "Mar",
-  ]
+  ];
 
   return monthsOrder.map((month) => ({
     month,
     profit: monthlyProfits[month] || 0,
-  }))
+  }));
 }
 
 export async function getMonthlyProfitsByFY(fyStartYear) {
-  const fyEndYear = fyStartYear + 1
+  const fyEndYear = fyStartYear + 1;
 
-  const start = new Date(fyStartYear, 3, 1) // April 1
-  const end = new Date(fyEndYear, 3, 1) // next year April 1
+  const start = new Date(fyStartYear, 3, 1); // April 1
+  const end = new Date(fyEndYear, 3, 1); // next year April 1
 
   const { data, error } = await supabase
     .from("projects")
     .select("project_date, profit")
     .eq("status", "Completed")
     .gte("project_date", start.toISOString())
-    .lt("project_date", end.toISOString())
+    .lt("project_date", end.toISOString());
 
-  if (error) throw error
+  if (error) throw error;
 
-  const monthlyProfits = {}
+  const monthlyProfits = {};
   data.forEach(({ project_date, profit }) => {
-    const date = new Date(project_date)
-    const month = date.toLocaleString("default", { month: "short" })
-    monthlyProfits[month] = (monthlyProfits[month] || 0) + (profit || 0)
-  })
+    const date = new Date(project_date);
+    const month = date.toLocaleString("default", { month: "short" });
+    monthlyProfits[month] = (monthlyProfits[month] || 0) + (profit || 0);
+  });
 
   const monthsOrder = [
     "Apr",
@@ -685,12 +728,12 @@ export async function getMonthlyProfitsByFY(fyStartYear) {
     "Jan",
     "Feb",
     "Mar",
-  ]
+  ];
 
   return monthsOrder.map((month) => ({
     month,
     profit: monthlyProfits[month] || 0,
-  }))
+  }));
 }
 
 // supabaseServices.js
@@ -708,8 +751,8 @@ export const getAllClientsWithProjects = async () => {
         profit,
         invoice_no
       )
-    `)
+    `);
 
-  if (error) throw error
-  return data
-}
+  if (error) throw error;
+  return data;
+};

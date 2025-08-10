@@ -13,13 +13,13 @@ const downloadCSV = (rows, filename) => {
   link.click();
 };
 
-const ComponentsTable = ({ data, onViewModeChange }) => {
+const ComponentsTable = ({ data, onViewModeChange, onDeleteProduct }) => {
   const [byCategory, setByCategory] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const handleToggle = () => {
     setByCategory(prev => {
-      const newMode = !prev ? 'category' : 'product';
+      const newMode = !prev ? "category" : "product";
       if (onViewModeChange) onViewModeChange(newMode);
       return !prev;
     });
@@ -40,7 +40,10 @@ const ComponentsTable = ({ data, onViewModeChange }) => {
 
   // filter products for the selected category
   const categoryProducts = selectedCategory
-    ? data.filter(prod => (prod.category?.name || "Uncategorized") === selectedCategory)
+    ? data.filter(
+        prod =>
+          (prod.category?.name || "Uncategorized") === selectedCategory
+      )
     : [];
 
   // ---------- CSV generators ----------
@@ -61,6 +64,14 @@ const ComponentsTable = ({ data, onViewModeChange }) => {
       p.category?.name || "Uncategorized"
     ]);
     downloadCSV([header, ...rows], "products.csv");
+  };
+
+  const handleDelete = (id) => {
+    
+      if (onDeleteProduct) {
+        onDeleteProduct(id); // Parent handles actual deletion
+      }
+    
   };
 
   return (
@@ -97,6 +108,7 @@ const ComponentsTable = ({ data, onViewModeChange }) => {
                 <th className="px-4 py-2">Qty</th>
                 <th className="px-4 py-2">Brand</th>
                 <th className="px-4 py-2">Category</th>
+                <th className="px-4 py-2">Actions</th>
               </>
             )}
           </tr>
@@ -111,20 +123,43 @@ const ComponentsTable = ({ data, onViewModeChange }) => {
               >
                 <td className="px-4 py-2">{index + 1}</td>
                 <td className="px-4 py-2 text-blue-600">{item.category}</td>
-                <td className={`px-4 py-2 ${item.totalQty === 0 ? 'text-red-600' : ''}`}>{item.totalQty}</td>
+                <td
+                  className={`px-4 py-2 ${
+                    item.totalQty === 0 ? "text-red-600" : ""
+                  }`}
+                >
+                  {item.totalQty}
+                </td>
               </tr>
             ))
           ) : (
             data.map((comp, index) => (
-              <tr key={`${comp.id}-${index}`} className="border-b hover:bg-gray-50">
+              <tr
+                key={`${comp.id}-${index}`}
+                className="border-b hover:bg-gray-50"
+              >
                 <td className="px-4 py-2">{index + 1}</td>
                 <td className="px-4 py-2">{comp.name}</td>
                 <td className="px-4 py-2">{comp.hsn}</td>
-                <td className={`px-4 py-2 ${comp.qty === 0 ? 'text-red-600' : ''}`}>
+                <td
+                  className={`px-4 py-2 ${
+                    comp.qty === 0 ? "text-red-600" : ""
+                  }`}
+                >
                   {comp.qty}
                 </td>
                 <td className="px-4 py-2">{comp.brand}</td>
-                <td className="px-4 py-2">{comp.category?.name || 'Uncategorized'}</td>
+                <td className="px-4 py-2">
+                  {comp.category?.name || "Uncategorized"}
+                </td>
+                <td className="px-4 py-2">
+                  <button
+                    onClick={() => handleDelete(comp.id)}
+                    className="px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))
           )}
